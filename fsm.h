@@ -106,6 +106,21 @@
  * The state machine and transitions can be conveniently defined with an array
  * of FSM::Trans structs. This makes the structure of the FSM very clear.
  *
+ * C++11
+ * -----
+ *
+ * The implementation uses some C++11 features. Therefore, in order to use the
+ * code, the compiler must support theses features and C++11 must be enabled.
+ *
+ * Currently, the following features are used.
+ *
+ * - std::function
+ * - nullptr
+ *
+ * Note that for older compilers (notably gcc), std::function has been included
+ * for some time in the tr1 header. For such compilers, the code can be changed
+ * to use `std::tr1::function` and `NULL` respectively.
+ *
  * Debug
  * -----
  *
