@@ -155,3 +155,38 @@ TEST_CASE("Test state machine reset")
 	REQUIRE(fsm.is_final() == true);
 }
 
+TEST_CASE("Test debug function")
+{
+	int action_count = 0;
+	const int stateA = 1;
+	FSM::Fsm fsm;
+	FSM::Trans transitions[] = {
+		{FSM::Fsm_Initial, stateA        , 'a', nullptr, nullptr},
+		{stateA          , FSM::Fsm_Final, 'b', nullptr, nullptr},
+	};
+	fsm.add_transitions(&transitions[0], &transitions[0]+2);
+	fsm.init();
+
+	SECTION("Test enable debugging function.") {
+		int dbg_from = 0;
+		int dbg_to = 0;
+		char dbg_tr = 0;
+		fsm.add_debug_fn([&dbg_from, &dbg_to, &dbg_tr](int from, int to, char tr){ dbg_from = from; dbg_to = to; dbg_tr = tr; });
+		fsm.execute('a');
+		REQUIRE(dbg_from == FSM::Fsm_Initial);
+		REQUIRE(dbg_to == stateA);
+		REQUIRE(dbg_tr == 'a');
+	}
+	
+	SECTION("Test disable debugging function.") {
+		int dbg_from = 0;
+		int dbg_to = 0;
+		char dbg_tr = 0;
+		fsm.reset();
+		fsm.add_debug_fn(nullptr);
+		REQUIRE(dbg_from == 0);
+		REQUIRE(dbg_to == 0);
+		REQUIRE(dbg_tr == 0);
+	}
+}
+
