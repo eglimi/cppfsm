@@ -170,30 +170,27 @@
 
 // Forward declarations
 
-namespace FSM
-{
+namespace FSM {
 
 /**
  * A list of predefined pseudo states.
  */
-enum Predefined_States
-{
-    Fsm_Initial = INT_MAX-1,
-    Fsm_Final = INT_MAX,
+enum Predefined_States {
+	Fsm_Initial = INT_MAX-1,
+	Fsm_Final = INT_MAX,
 };
 
-enum Fsm_Errors
-{
-    // Success
-    Fsm_Success = 0,
+enum Fsm_Errors {
+	// Success
+	Fsm_Success = 0,
 
-    // Warnings
-    // The current state has not such trigger associated.
-    Fsm_NoMatchingTrigger,
+	// Warnings
+	// The current state has not such trigger associated.
+	Fsm_NoMatchingTrigger,
 
-    // Errors
-    // The state machine has not been initialized. Call init().
-    Fsm_NotInitialized,
+	// Errors
+	// The state machine has not been initialized. Call init().
+	Fsm_NotInitialized,
 };
 
 // Defines the function prototype for a guard function.
@@ -207,165 +204,151 @@ typedef std::function<void(int,int,char)> debugFn;
 /**
  * Defines a transition between two states.
  */
-struct Trans
-{
-    int from_state;
-    int to_state;
-    char trigger;
-    guardFn guard;
-    actionFn action;
+struct Trans {
+	int from_state;
+	int to_state;
+	char trigger;
+	guardFn guard;
+	actionFn action;
 };
 
 /**
  * An generic finite state machine (FSM) implementation.
  */
-class Fsm
-{
+class Fsm {
 
-    // Definitions for the structure that holds the transitions.
-    // For good performance on state machines with many transitions, transitions
-    // are stored for each `from_state`:
-    //   map<from_state, vector<Trans> >
-    typedef std::vector<Trans> transition_elem_t;
-    typedef std::map<int, transition_elem_t> transitions_t;
-    typedef transitions_t::const_iterator transitions_it;
-    transitions_t m_transitions;
-    // Current state.
-    int m_cs;
-    bool m_initialized;
-		debugFn m_debug_fn;
+	// Definitions for the structure that holds the transitions.
+	// For good performance on state machines with many transitions, transitions
+	// are stored for each `from_state`:
+	//   map<from_state, vector<Trans> >
+	typedef std::vector<Trans> transition_elem_t;
+	typedef std::map<int, transition_elem_t> transitions_t;
+	typedef transitions_t::const_iterator transitions_it;
+	transitions_t m_transitions;
+	// Current state.
+	int m_cs;
+	bool m_initialized;
+	debugFn m_debug_fn;
 
 public:
 
-    // Constructor.
-    Fsm() : m_transitions(), m_cs(0), m_initialized(false), m_debug_fn(nullptr) {}
+	// Constructor.
+	Fsm() : m_transitions(), m_cs(0), m_initialized(false), m_debug_fn(nullptr) {}
 
-    /**
-     * Initializes the FSM.
-     *
-     * This sets the current state to Fsm_Initial.
-     * Once the fsm has been initialized, calling this function has no effect.
-     */
-    void init()
-    {
-        if(!m_initialized)
-        {
-            m_cs = Fsm_Initial;
-            m_initialized = true;
-        }
-    }
+	/**
+	 * Initializes the FSM.
+	 *
+	 * This sets the current state to Fsm_Initial.
+	 * Once the fsm has been initialized, calling this function has no effect.
+	 */
+	void init() {
+		if(!m_initialized) {
+			m_cs = Fsm_Initial;
+			m_initialized = true;
+		}
+	}
 
-    /**
-     * Set the machine to uninitialized and the state to Fsm_Initial.
-     *
-     * This method can be called at any time. After a reset, init() must be
-     * called in order to use the machine.
-     */
-    void reset()
-    {
-        m_cs = Fsm_Initial;
-        m_initialized = false;
-    }
+	/**
+	 * Set the machine to uninitialized and the state to Fsm_Initial.
+	 *
+	 * This method can be called at any time. After a reset, init() must be
+	 * called in order to use the machine.
+	 */
+	void reset() {
+		m_cs = Fsm_Initial;
+		m_initialized = false;
+	}
 
-    /**
-     * Add a set of transition definitions to the state machine.
-     *
-     * This function can be called multiple times at any time. Added
-     * transitions cannot be removed from the machine.
-     */
-    template<typename _InputIt>
-    void add_transitions(_InputIt start, _InputIt end)
-    {
-        _InputIt it = start;
-        for(; it != end; ++it)
-        {
-            // Add element in the transition table
-            m_transitions[(*it).from_state].push_back(*it);
-        }
-    }
+	/**
+	 * Add a set of transition definitions to the state machine.
+	 *
+	 * This function can be called multiple times at any time. Added
+	 * transitions cannot be removed from the machine.
+	 */
+	template<typename _InputIt>
+	void add_transitions(_InputIt start, _InputIt end) {
+		_InputIt it = start;
+		for(; it != end; ++it) {
+			// Add element in the transition table
+			m_transitions[(*it).from_state].push_back(*it);
+		}
+	}
 
-		/**
-		 * Adds a function that is called on every state change. The type of the
-		 * function is `debugFn`. It has the following parameters.
-		 *
-		 * - from_state (int)
-		 * - to_state (int)
-		 * - trigger (char)
-		 *
-		 * It can be used for debugging purposes. It can be enabled and disabled at
-		 * runtime. In order to enable it, pass a valid function pointer. In order
-		 * to disable it, pass `nullptr` to this function.
-		 */
-		void add_debug_fn(debugFn fn)
-		{
-			m_debug_fn = fn;
+	/**
+	 * Adds a function that is called on every state change. The type of the
+	 * function is `debugFn`. It has the following parameters.
+	 *
+	 * - from_state (int)
+	 * - to_state (int)
+	 * - trigger (char)
+	 *
+	 * It can be used for debugging purposes. It can be enabled and disabled at
+	 * runtime. In order to enable it, pass a valid function pointer. In order
+	 * to disable it, pass `nullptr` to this function.
+	 */
+	void add_debug_fn(debugFn fn) {
+		m_debug_fn = fn;
+	}
+
+	/**
+	 * Execute the given trigger according to the semantics defined for this
+	 * state machine.
+	 *
+	 * Returns the status of the execute operation. Fsm_Success is 0.
+	 */
+	Fsm_Errors execute(char trigger) {
+		if(not m_initialized) {
+			return Fsm_NotInitialized;
 		}
 
-    /**
-     * Execute the given trigger according to the semantics defined for this
-     * state machine.
-     *
-     * Returns the status of the execute operation. Fsm_Success is 0.
-     */
-    Fsm_Errors execute(char trigger)
-    {
-        if(not m_initialized)
-        {
-            return Fsm_NotInitialized;
-        }
+		Fsm_Errors err_code = Fsm_NoMatchingTrigger;
 
-        Fsm_Errors err_code = Fsm_NoMatchingTrigger;
+		transitions_it state_transitions = m_transitions.find(m_cs);
+		if(state_transitions == m_transitions.end()) {
+			return err_code; // No transition from current state found.
+		}
 
-        transitions_it state_transitions = m_transitions.find(m_cs);
-        if(state_transitions == m_transitions.end())
-        {
-            return err_code; // No transition from current state found.
-        }
+		// iterate the transitions
+		const transition_elem_t& active_transitions = state_transitions->second;
+		transition_elem_t::const_iterator it = active_transitions.begin();
+		for(; it != active_transitions.end(); ++it) {
 
-        // iterate the transitions
-        const transition_elem_t& active_transitions = state_transitions->second;
-        transition_elem_t::const_iterator it = active_transitions.begin();
-        for(; it != active_transitions.end(); ++it)
-        {
+			// Check if trigger matches.
+			if(trigger != (*it).trigger) continue;
+			err_code = Fsm_Success;
 
-            // Check if trigger matches.
-            if(trigger != (*it).trigger) continue;
-            err_code = Fsm_Success;
+			// Check if guard exists and returns true.
+			if((*it).guard && (not(*it).guard())) continue;
 
-            // Check if guard exists and returns true.
-            if((*it).guard && (not(*it).guard())) continue;
+			// Now we have to take the action and set the new state.
+			// Then we are done.
 
-            // Now we have to take the action and set the new state.
-            // Then we are done.
+			// Check if action exists and execute it.
+			if((*it).action != 0) {
+				(*it).action(); //execute action
+			}
+			m_cs = (*it).to_state;
+			if(m_debug_fn) {
+				m_debug_fn((*it).from_state, (*it).to_state, trigger);
+			}
+			break;
+		}
 
-            // Check if action exists and execute it.
-            if((*it).action != 0)
-            {
-                (*it).action(); //execute action
-            }
-            m_cs = (*it).to_state;
-						if(m_debug_fn)
-						{
-							m_debug_fn((*it).from_state, (*it).to_state, trigger);
-						}
-            break;
-        }
+		return err_code;
+	}
 
-        return err_code;
-    }
-
-    /**
-     * Returns the current state;
-     */
-    int state() const { return m_cs; }
-    /**
-     * Returns whether the current state is the initial state.
-     */
-    bool is_initial() const { return m_cs == Fsm_Initial; }
-    /**
-     * Returns whether the current state is the final state.
-     */
-    bool is_final() const { return m_cs == Fsm_Final; }
+	/**
+	 * Returns the current state;
+	 */
+	int state() const { return m_cs; }
+	/**
+	 * Returns whether the current state is the initial state.
+	 */
+	bool is_initial() const { return m_cs == Fsm_Initial; }
+	/**
+	 * Returns whether the current state is the final state.
+	 */
+	bool is_final() const { return m_cs == Fsm_Final; }
 };
 
 } // end namespace FSM

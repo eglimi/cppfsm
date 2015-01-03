@@ -171,13 +171,13 @@ TEST_CASE("Test debug function")
 		int dbg_from = 0;
 		int dbg_to = 0;
 		char dbg_tr = 0;
-		fsm.add_debug_fn([&dbg_from, &dbg_to, &dbg_tr](int from, int to, char tr){ dbg_from = from; dbg_to = to; dbg_tr = tr; });
+		fsm.add_debug_fn([&dbg_from, &dbg_to, &dbg_tr](int from, int to, char tr) { dbg_from = from; dbg_to = to; dbg_tr = tr; });
 		fsm.execute('a');
 		REQUIRE(dbg_from == FSM::Fsm_Initial);
 		REQUIRE(dbg_to == stateA);
 		REQUIRE(dbg_tr == 'a');
 	}
-	
+
 	SECTION("Test disable debugging function.") {
 		int dbg_from = 0;
 		int dbg_to = 0;
