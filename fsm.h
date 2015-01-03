@@ -106,6 +106,25 @@
  * The state machine and transitions can be conveniently defined with an array
  * of FSM::Trans structs. This makes the structure of the FSM very clear.
  *
+ * Debug
+ * -----
+ *
+ * It is possible to add a debug function in order to track state changes. The
+ * debug function is either a `nullptr`, or of type `debugFn`. When the
+ * function is defined, it is invoked with the `from_state`, `to_state`, and
+ * `trigger` arguments whenever a state change happens.
+ *
+ * \code
+ * // Define debug function
+ * void dbg_fsm(int from_state, int to_state, char trigger) {
+ *   std::cout << "changed from " << from_state << " to " << to_state << " with trigger " << trigger;
+ * }
+ * // Enable debug
+ * fsm.add_debug_fn(dbg_fsm);
+ * // Disable debug
+ * fsm.add_debug_fn(nullptr);
+ * \endcode
+ *
  * Example
  * -------
  *
@@ -181,6 +200,9 @@ enum Fsm_Errors
 typedef std::function<bool()> guardFn;
 // Defines the function prototype for an action function.
 typedef std::function<void()> actionFn;
+// Defines the function prototype for a debug function.
+// Parameters are: from_state, to_state, trigger
+typedef std::function<void(int,int,char)> debugFn;
 
 /**
  * Defines a transition between two states.
@@ -211,11 +233,12 @@ class Fsm
     // Current state.
     int m_cs;
     bool m_initialized;
+		debugFn m_debug_fn;
 
 public:
 
     // Constructor.
-    Fsm() : m_transitions(), m_cs(0), m_initialized(false) {}
+    Fsm() : m_transitions(), m_cs(0), m_initialized(false), m_debug_fn(nullptr) {}
 
     /**
      * Initializes the FSM.
@@ -261,6 +284,23 @@ public:
         }
     }
 
+		/**
+		 * Adds a function that is called on every state change. The type of the
+		 * function is `debugFn`. It has the following parameters.
+		 *
+		 * - from_state (int)
+		 * - to_state (int)
+		 * - trigger (char)
+		 *
+		 * It can be used for debugging purposes. It can be enabled and disabled at
+		 * runtime. In order to enable it, pass a valid function pointer. In order
+		 * to disable it, pass `nullptr` to this function.
+		 */
+		void add_debug_fn(debugFn fn)
+		{
+			m_debug_fn = fn;
+		}
+
     /**
      * Execute the given trigger according to the semantics defined for this
      * state machine.
@@ -304,6 +344,10 @@ public:
                 (*it).action(); //execute action
             }
             m_cs = (*it).to_state;
+						if(m_debug_fn)
+						{
+							m_debug_fn((*it).from_state, (*it).to_state, trigger);
+						}
             break;
         }
 
