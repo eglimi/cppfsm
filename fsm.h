@@ -143,9 +143,9 @@
  *   const int stateA = 1;
  *   FSM::Trans transitions[] =
  *   {
- *     // from state     , to state      , trigger, guard , action
- *     { FSM::Fsm_Initial, stateA        , 'a'    , NULL  , action1 },
- *     { stateA          , FSM::Fsm_Final, 'b'    , guard2, action2 },
+ *     // from state     , to state      , trigger, guard           , action
+ *     { FSM::Fsm_Initial, stateA        , 'a'    , nullptr         , action1 },
+ *     { stateA          , FSM::Fsm_Final, 'b'    , []{return true} , action2 },
  *   };
  *
  *   FSM::Fsm fsm;
