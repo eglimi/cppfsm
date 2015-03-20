@@ -178,7 +178,7 @@
 */
 
 // Includes
-#include <limits.h>
+#include <limits>
 #include <map>
 #include <vector>
 #include <functional>
@@ -191,8 +191,8 @@ namespace FSM {
  * A list of predefined pseudo states.
  */
 enum Predefined_States {
-	Fsm_Initial = INT_MAX-1,
-	Fsm_Final = INT_MAX,
+	Fsm_Initial = std::numeric_limits<int>::max()-1,
+	Fsm_Final = std::numeric_limits<int>::max(),
 };
 
 enum Fsm_Errors {
