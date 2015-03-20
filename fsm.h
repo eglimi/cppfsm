@@ -209,12 +209,12 @@ enum Fsm_Errors {
 };
 
 // Defines the function prototype for a guard function.
-typedef std::function<bool()> guardFn;
+using guardFn = std::function<bool()>;
 // Defines the function prototype for an action function.
-typedef std::function<void()> actionFn;
+using actionFn = std::function<void()>;
 // Defines the function prototype for a debug function.
 // Parameters are: from_state, to_state, trigger
-typedef std::function<void(int,int,char)> debugFn;
+using debugFn = std::function<void(int,int,char)>;
 
 /**
  * Defines a transition between two states.
@@ -236,9 +236,9 @@ class Fsm {
 	// For good performance on state machines with many transitions, transitions
 	// are stored for each `from_state`:
 	//   map<from_state, vector<Trans> >
-	typedef std::vector<Trans> transition_elem_t;
-	typedef std::map<int, transition_elem_t> transitions_t;
-	typedef transitions_t::const_iterator transitions_it;
+	using transition_elem_t = std::vector<Trans>;
+	using transitions_t = std::map<int, transition_elem_t>;
+	using transitions_it = transitions_t::const_iterator;
 	transitions_t m_transitions;
 	// Current state.
 	int m_cs;
