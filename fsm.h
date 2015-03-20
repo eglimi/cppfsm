@@ -238,7 +238,6 @@ class Fsm {
 	//   map<from_state, vector<Trans> >
 	using transition_elem_t = std::vector<Trans>;
 	using transitions_t = std::map<int, transition_elem_t>;
-	using transitions_it = transitions_t::const_iterator;
 	transitions_t m_transitions;
 	// Current state.
 	int m_cs;
@@ -318,7 +317,7 @@ public:
 
 		Fsm_Errors err_code = Fsm_NoMatchingTrigger;
 
-		transitions_it state_transitions = m_transitions.find(m_cs);
+		const auto state_transitions = m_transitions.find(m_cs);
 		if(state_transitions == m_transitions.end()) {
 			return err_code; // No transition from current state found.
 		}
