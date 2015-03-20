@@ -116,6 +116,9 @@
  *
  * - std::function
  * - nullptr
+ * - range based for loops
+ * - type aliases
+ * - numeric_limits (C++11 constexpr version)
  *
  * Note that for older compilers (notably gcc), std::function has been included
  * for some time in the tr1 header. For such compilers, the code can be changed
@@ -255,7 +258,8 @@ public:
 	 * This sets the current state to Fsm_Initial.
 	 * Once the fsm has been initialized, calling this function has no effect.
 	 */
-	void init() {
+	void init()
+	{
 		if(!m_initialized) {
 			m_cs = Fsm_Initial;
 			m_initialized = true;
@@ -268,7 +272,8 @@ public:
 	 * This method can be called at any time. After a reset, init() must be
 	 * called in order to use the machine.
 	 */
-	void reset() {
+	void reset()
+	{
 		m_cs = Fsm_Initial;
 		m_initialized = false;
 	}
@@ -280,7 +285,8 @@ public:
 	 * transitions cannot be removed from the machine.
 	 */
 	template<typename _InputIt>
-	void add_transitions(_InputIt start, _InputIt end) {
+	void add_transitions(_InputIt start, _InputIt end)
+	{
 		_InputIt it = start;
 		for(; it != end; ++it) {
 			// Add element in the transition table
@@ -300,7 +306,8 @@ public:
 	 * runtime. In order to enable it, pass a valid function pointer. In order
 	 * to disable it, pass `nullptr` to this function.
 	 */
-	void add_debug_fn(debugFn fn) {
+	void add_debug_fn(debugFn fn)
+	{
 		m_debug_fn = fn;
 	}
 
@@ -310,7 +317,8 @@ public:
 	 *
 	 * Returns the status of the execute operation. Fsm_Success is 0.
 	 */
-	Fsm_Errors execute(char trigger) {
+	Fsm_Errors execute(char trigger)
+	{
 		if(not m_initialized) {
 			return Fsm_NotInitialized;
 		}
