@@ -324,26 +324,25 @@ public:
 
 		// iterate the transitions
 		const transition_elem_t& active_transitions = state_transitions->second;
-		transition_elem_t::const_iterator it = active_transitions.begin();
-		for(; it != active_transitions.end(); ++it) {
+		for(auto& transition : active_transitions) {
 
 			// Check if trigger matches.
-			if(trigger != (*it).trigger) continue;
+			if(trigger != transition.trigger) continue;
 			err_code = Fsm_Success;
 
 			// Check if guard exists and returns true.
-			if((*it).guard && (not(*it).guard())) continue;
+			if(transition.guard && (not transition.guard())) continue;
 
 			// Now we have to take the action and set the new state.
 			// Then we are done.
 
 			// Check if action exists and execute it.
-			if((*it).action != 0) {
-				(*it).action(); //execute action
+			if(transition.action != 0) {
+				transition.action(); //execute action
 			}
-			m_cs = (*it).to_state;
+			m_cs = transition.to_state;
 			if(m_debug_fn) {
-				m_debug_fn((*it).from_state, (*it).to_state, trigger);
+				m_debug_fn(transition.from_state, transition.to_state, trigger);
 			}
 			break;
 		}
