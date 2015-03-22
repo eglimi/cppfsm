@@ -31,6 +31,7 @@
 
 #define CATCH_CONFIG_MAIN
 #include "catch.hpp"
+#include <array>
 #include "../fsm.h"
 
 TEST_CASE("Test Initialization")
@@ -42,10 +43,10 @@ TEST_CASE("Test Initialization")
 TEST_CASE("Test initial and final pseudo states")
 {
 	FSM::Fsm fsm;
-	FSM::Trans transitions[] = {
-		{FSM::Fsm_Initial, FSM::Fsm_Final, 'a', nullptr, nullptr},
-	};
-	fsm.add_transitions(&transitions[0], &transitions[0]+1);
+	std::array<FSM::Trans,1> transitions = {{
+			{FSM::Fsm_Initial, FSM::Fsm_Final, 'a', nullptr, nullptr},
+	}};
+	fsm.add_transitions(transitions.begin(), transitions.end());
 	fsm.init();
 
 	SECTION("Test initial pseudo state") {
@@ -65,10 +66,10 @@ TEST_CASE("Test initial and final pseudo states")
 TEST_CASE("Test missing trigger")
 {
 	FSM::Fsm fsm;
-	FSM::Trans transitions[] = {
-		{FSM::Fsm_Initial, FSM::Fsm_Final, 'b', nullptr, nullptr},
-	};
-	fsm.add_transitions(&transitions[0], &transitions[0]+1);
+	std::array<FSM::Trans,1> transitions = {{
+			{FSM::Fsm_Initial, FSM::Fsm_Final, 'b', nullptr, nullptr},
+	}};
+	fsm.add_transitions(transitions.begin(), transitions.end());
 	fsm.init();
 	REQUIRE(fsm.execute('a') == FSM::Fsm_NoMatchingTrigger);
 }
@@ -77,10 +78,10 @@ TEST_CASE("Test guards")
 {
 	SECTION("Test false guard") {
 		FSM::Fsm fsm;
-		FSM::Trans transitions[] = {
-			{FSM::Fsm_Initial, FSM::Fsm_Final, 'a', []{return false;}, nullptr},
-		};
-		fsm.add_transitions(&transitions[0], &transitions[0]+1);
+		std::array<FSM::Trans,1> transitions = {{
+				{FSM::Fsm_Initial, FSM::Fsm_Final, 'a', []{return false;}, nullptr},
+		}};
+		fsm.add_transitions(transitions.begin(), transitions.end());
 		fsm.init();
 		REQUIRE(fsm.execute('a') == FSM::Fsm_Success);
 		// ensure that the transition to final is not taken (because of the guard).
@@ -89,10 +90,10 @@ TEST_CASE("Test guards")
 
 	SECTION("Test true guard") {
 		FSM::Fsm fsm;
-		FSM::Trans transitions[] = {
-			{FSM::Fsm_Initial, FSM::Fsm_Final, 'a', []{return true;}, nullptr},
-		};
-		fsm.add_transitions(&transitions[0], &transitions[0]+1);
+		std::array<FSM::Trans,1> transitions = {{
+				{FSM::Fsm_Initial, FSM::Fsm_Final, 'a', []{return true;}, nullptr},
+		}};
+		fsm.add_transitions(transitions.begin(), transitions.end());
 		fsm.init();
 		REQUIRE(fsm.execute('a') == FSM::Fsm_Success);
 		// ensure that the transition to final is taken (because of the guard).
@@ -102,11 +103,11 @@ TEST_CASE("Test guards")
 	SECTION("Test same action with different guards") {
 		int count = 0;
 		FSM::Fsm fsm;
-		FSM::Trans transitions[] = {
-			{FSM::Fsm_Initial, FSM::Fsm_Final, 'a', []{return false;}, [&count]{count++;}},
-			{FSM::Fsm_Initial, FSM::Fsm_Final, 'a', []{return true; }, [&count]{count = 10;}},
-		};
-		fsm.add_transitions(&transitions[0], &transitions[0]+2);
+		std::array<FSM::Trans,2> transitions = {{
+				{FSM::Fsm_Initial, FSM::Fsm_Final, 'a', []{return false;}, [&count]{count++;}},
+				{FSM::Fsm_Initial, FSM::Fsm_Final, 'a', []{return true; }, [&count]{count = 10;}},
+		}};
+		fsm.add_transitions(transitions.begin(), transitions.end());
 		fsm.init();
 		REQUIRE(fsm.execute('a') == FSM::Fsm_Success);
 		// ensure that action2 was taken (because of the guard).
@@ -120,12 +121,12 @@ TEST_CASE("Test Transitions")
 		int count = 0;
 		const int stateA = 1;
 		FSM::Fsm fsm;
-		FSM::Trans transitions[] = {
-			{FSM::Fsm_Initial, stateA        , 'a', nullptr, [&count]{count++;}},
-			{stateA          , stateA        , 'a', nullptr, [&count]{count++;}},
-			{stateA          , FSM::Fsm_Final, 'a', nullptr, [&count]{count++;}},
-		};
-		fsm.add_transitions(&transitions[0], &transitions[0]+3);
+		std::array<FSM::Trans,3> transitions = {{
+				{FSM::Fsm_Initial, stateA        , 'a', nullptr, [&count]{count++;}},
+				{stateA          , stateA        , 'a', nullptr, [&count]{count++;}},
+				{stateA          , FSM::Fsm_Final, 'a', nullptr, [&count]{count++;}},
+		}};
+		fsm.add_transitions(transitions.begin(), transitions.end());
 		fsm.init();
 		REQUIRE(fsm.execute('a') == FSM::Fsm_Success);
 		// Ensure that only one action has executed.
@@ -138,11 +139,11 @@ TEST_CASE("Test state machine reset")
 	int action_count = 0;
 	const int stateA = 1;
 	FSM::Fsm fsm;
-	FSM::Trans transitions[] = {
-		{FSM::Fsm_Initial, stateA        , 'a', nullptr, nullptr},
-		{stateA          , FSM::Fsm_Final, 'b', nullptr, nullptr},
-	};
-	fsm.add_transitions(&transitions[0], &transitions[0]+2);
+	std::array<FSM::Trans,2> transitions = {{
+			{FSM::Fsm_Initial, stateA        , 'a', nullptr, nullptr},
+			{stateA          , FSM::Fsm_Final, 'b', nullptr, nullptr},
+	}};
+	fsm.add_transitions(transitions.begin(), transitions.end());
 	fsm.init();
 	REQUIRE(fsm.execute('a') == FSM::Fsm_Success);
 	REQUIRE(fsm.state() == stateA);
@@ -160,11 +161,11 @@ TEST_CASE("Test debug function")
 	int action_count = 0;
 	const int stateA = 1;
 	FSM::Fsm fsm;
-	FSM::Trans transitions[] = {
-		{FSM::Fsm_Initial, stateA        , 'a', nullptr, nullptr},
-		{stateA          , FSM::Fsm_Final, 'b', nullptr, nullptr},
-	};
-	fsm.add_transitions(&transitions[0], &transitions[0]+2);
+	std::array<FSM::Trans,2> transitions = {{
+			{FSM::Fsm_Initial, stateA        , 'a', nullptr, nullptr},
+			{stateA          , FSM::Fsm_Final, 'b', nullptr, nullptr},
+	}};
+	fsm.add_transitions(transitions.begin(), transitions.end());
 	fsm.init();
 
 	SECTION("Test enable debugging function.") {
