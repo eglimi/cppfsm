@@ -29,6 +29,10 @@
  * \date      18-Dec-2014
  *
  * \file fsm.h
+ *
+ * Finite State Machine
+ * ====================
+ *
  * Generic implementation of a finite state machine (FSM).
  *
  * Overview
@@ -112,18 +116,6 @@
  * The implementation uses some C++11 features. Therefore, in order to use the
  * code, the compiler must support theses features and C++11 must be enabled.
  *
- * Currently, the following features are used.
- *
- * - std::function
- * - nullptr
- * - range based for loops
- * - type aliases
- * - numeric_limits (C++11 constexpr version)
- *
- * Note that for older compilers (notably gcc), std::function has been included
- * for some time in the tr1 header. For such compilers, the code can be changed
- * to use `std::tr1::function` and `NULL` respectively.
- *
  * Debug
  * -----
  *
@@ -132,7 +124,7 @@
  * function is defined, it is invoked with the `from_state`, `to_state`, and
  * `trigger` arguments whenever a state change happens.
  *
- * \code
+ * ~~~
  * // Define debug function
  * void dbg_fsm(int from_state, int to_state, char trigger) {
  *   std::cout << "changed from " << from_state << " to " << to_state << " with trigger " << trigger;
@@ -141,25 +133,25 @@
  * fsm.add_debug_fn(dbg_fsm);
  * // Disable debug
  * fsm.add_debug_fn(nullptr);
- * \endcode
+ * ~~~
  *
  * Example
  * -------
  *
  * The following example implements this simple state machine.
  *
- * \code
+ * ~~~
  *   ---------------                    ----------                              -------------
  *   | Fsm_Initial | -- 'a'/action1 --> | stateA | -- [guard2]'b' / action2 --> | Fsm_Final |
  *   ---------------                    ----------                              -------------
- * \endcode
+ * ~~~
  *
- * \code
+ * ~~~
  *   void action1() { std::cout << "perform custom action 1\n"; }
  *   bool guard2() const { return true; }
  *   void action2() { std::cout << "perform custom action 2\n"; }
  *   const int stateA = 1;
- *   FSM::Trans transitions[] =
+ *   std::vector<FSM::Trans> transitions =
  *   {
  *     // from state     , to state      , trigger, guard           , action
  *     { FSM::Fsm_Initial, stateA        , 'a'    , nullptr         , action1 },
@@ -167,7 +159,7 @@
  *   };
  *
  *   FSM::Fsm fsm;
- *   fsm.add_transitions(&transitions[0], &transitions[0]+2);
+ *   fsm.add_transitions(transitions);
  *   fsm.init();
  *   assert(is_initial());
  *   fsm.execute('a');
@@ -177,7 +169,7 @@
  *   assert(is_final());
  *   fsm.reset();
  *   assert(is_initial());
- * \endcode
+ * ~~~
 */
 
 // Includes
@@ -284,14 +276,49 @@ public:
 	 * This function can be called multiple times at any time. Added
 	 * transitions cannot be removed from the machine.
 	 */
-	template<typename _InputIt>
-	void add_transitions(_InputIt start, _InputIt end)
+	template<typename InputIt>
+	void add_transitions(InputIt start, InputIt end)
 	{
-		_InputIt it = start;
+		InputIt it = start;
 		for(; it != end; ++it) {
 			// Add element in the transition table
 			m_transitions[(*it).from_state].push_back(*it);
 		}
+	}
+
+	/**
+	 * Overloaded method to add transitions to the state machine.
+	 *
+	 * This method takes a collection and adds all its elements to the list of
+	 * transitions.
+	 */
+	template<typename Coll>
+	void add_transitions(Coll&& c)
+	{
+		add_transitions(std::begin(c), std::end(c));
+	}
+
+	/**
+	 * Overloaded method to add transitions to the state machine.
+	 *
+	 * This method takes a initializer list and adds all its elements to the list
+	 * of transitions.
+	 *
+	 * This is very convenient, because it avoids the creation of an unnecessary
+	 * temporary object. Usage is like the following.
+	 *
+	 * ~~~
+	 * FSM::Fsm fsm;
+	 * fsm.add_transitions({
+	 *   { stateA, stateB, 'a', []{...}, nullptr },
+	 *   { stateB, stateC, 'b', nullptr, []{...} },
+	 * });
+	 * ~~~
+	 */
+	void add_transitions(std::initializer_list<Trans>&& i)
+	{
+
+		add_transitions(std::begin(i), std::end(i));
 	}
 
 	/**
