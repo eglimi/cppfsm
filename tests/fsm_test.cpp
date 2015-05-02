@@ -32,6 +32,7 @@
 #define CATCH_CONFIG_MAIN
 #include "catch.hpp"
 #include <array>
+#include <vector>
 #include "../fsm.h"
 
 TEST_CASE("Test Initialization")
@@ -189,5 +190,35 @@ TEST_CASE("Test debug function")
 		REQUIRE(dbg_to == 0);
 		REQUIRE(dbg_tr == 0);
 	}
+}
+
+TEST_CASE("Test single argument add_transitions function")
+{
+	FSM::Fsm fsm;
+	const int stateA = 1;
+
+	SECTION("Test vector") {
+		std::vector<FSM::Trans> v = {
+			{FSM::Fsm_Initial, stateA        , 'a', nullptr, nullptr},
+			{stateA          , FSM::Fsm_Final, 'b', nullptr, nullptr},
+		};
+		fsm.add_transitions(v);
+		fsm.init();
+		fsm.execute('a');
+		fsm.execute('b');
+		REQUIRE(fsm.state() == FSM::Fsm_Final);
+	}
+
+	SECTION("Test initializer list") {
+		fsm.add_transitions({
+			{FSM::Fsm_Initial, stateA        , 'a', nullptr, nullptr},
+			{stateA          , FSM::Fsm_Final, 'b', nullptr, nullptr},
+			});
+		fsm.init();
+		fsm.execute('a');
+		fsm.execute('b');
+		REQUIRE(fsm.state() == FSM::Fsm_Final);
+	}
+
 }
 
