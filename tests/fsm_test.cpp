@@ -40,9 +40,9 @@ TEST_CASE("Test initial and final pseudo states")
 	enum class States { Initial, Final };
 	using F = FSM::Fsm<States, States::Initial>;
 	F fsm;
-	std::array<F::Trans, 1> transitions = {{
-	    {States::Initial, States::Final, 'a', nullptr, nullptr}, }};
-	fsm.add_transitions(transitions.begin(), transitions.end());
+	fsm.add_transitions({
+	    {States::Initial, States::Final, 'a', nullptr, nullptr},
+	});
 
 	SECTION("Test initial pseudo state")
 	{
@@ -63,9 +63,9 @@ TEST_CASE("Test missing trigger")
 	enum class States { Initial, Final };
 	using F = FSM::Fsm<States, States::Initial>;
 	F fsm;
-	std::array<F::Trans, 1> transitions = {{
-	    {States::Initial, States::Final, 'b', nullptr, nullptr}, }};
-	fsm.add_transitions(transitions.begin(), transitions.end());
+	fsm.add_transitions({
+	    {States::Initial, States::Final, 'b', nullptr, nullptr},
+	});
 	REQUIRE(fsm.execute('a') == FSM::Fsm_NoMatchingTrigger);
 }
 
@@ -76,9 +76,9 @@ TEST_CASE("Test guards")
 		enum class States { Initial, Final };
 		using F = FSM::Fsm<States, States::Initial>;
 		F fsm;
-		std::array<F::Trans, 1> transitions = {{
-		    {States::Initial, States::Final, 'a', [] { return false; }, nullptr}, }};
-		fsm.add_transitions(transitions.begin(), transitions.end());
+		fsm.add_transitions({
+		    {States::Initial, States::Final, 'a', [] { return false; }, nullptr},
+		});
 		REQUIRE(fsm.execute('a') == FSM::Fsm_Success);
 		// ensure that the transition to final is not taken (because of the guard).
 		REQUIRE(fsm.state() == States::Initial);
@@ -89,9 +89,9 @@ TEST_CASE("Test guards")
 		enum class States { Initial, Final };
 		using F = FSM::Fsm<States, States::Initial>;
 		F fsm;
-		std::array<F::Trans, 1> transitions = {{
-		    {States::Initial, States::Final, 'a', [] { return true; }, nullptr}, }};
-		fsm.add_transitions(transitions.begin(), transitions.end());
+		fsm.add_transitions({
+		    {States::Initial, States::Final, 'a', [] { return true; }, nullptr},
+		});
 		REQUIRE(fsm.execute('a') == FSM::Fsm_Success);
 		// ensure that the transition to final is taken (because of the guard).
 		REQUIRE(fsm.state() == States::Final);
@@ -103,11 +103,10 @@ TEST_CASE("Test guards")
 		enum class States { Initial, Final };
 		using F = FSM::Fsm<States, States::Initial>;
 		F fsm;
-		std::array<F::Trans, 2> transitions = {{
+		fsm.add_transitions({
 		    {States::Initial, States::Final, 'a', [] { return false; }, [&count] { count++; }},
-		    {States::Initial, States::Final, 'a', [] { return true; },
-		     [&count] { count = 10; }}, }};
-		fsm.add_transitions(transitions.begin(), transitions.end());
+		    {States::Initial, States::Final, 'a', [] { return true; }, [&count] { count = 10; }},
+		});
 		REQUIRE(fsm.execute('a') == FSM::Fsm_Success);
 		// ensure that action2 was taken (because of the guard).
 		REQUIRE(count == 10);
@@ -122,11 +121,11 @@ TEST_CASE("Test Transitions")
 		enum class States { Initial, A, Final };
 		using F = FSM::Fsm<States, States::Initial>;
 		F fsm;
-		std::array<F::Trans, 3> transitions = {{
+		fsm.add_transitions({
 		    {States::Initial, States::A, 'a', nullptr, [&count] { count++; }},
 		    {States::A, States::A, 'a', nullptr, [&count] { count++; }},
-		    {States::A, States::Final, 'a', nullptr, [&count] { count++; }}, }};
-		fsm.add_transitions(transitions.begin(), transitions.end());
+		    {States::A, States::Final, 'a', nullptr, [&count] { count++; }},
+		});
 		REQUIRE(fsm.execute('a') == FSM::Fsm_Success);
 		// Ensure that only one action has executed.
 		REQUIRE(count == 1);
@@ -139,10 +138,10 @@ TEST_CASE("Test state machine reset")
 	enum class States { Initial, A, Final };
 	using F = FSM::Fsm<States, States::Initial>;
 	F fsm;
-	std::array<F::Trans, 2> transitions = {{
+	fsm.add_transitions({
 	    {States::Initial, States::A, 'a', nullptr, nullptr},
-	    {States::A, States::Final, 'b', nullptr, nullptr}, }};
-	fsm.add_transitions(transitions.begin(), transitions.end());
+	    {States::A, States::Final, 'b', nullptr, nullptr},
+	});
 	REQUIRE(fsm.execute('a') == FSM::Fsm_Success);
 	REQUIRE(fsm.state() == States::A);
 	fsm.reset();
@@ -157,10 +156,10 @@ TEST_CASE("Test debug function")
 	enum class States { Initial, A, Final };
 	using F = FSM::Fsm<States, States::Initial>;
 	F fsm;
-	std::array<F::Trans, 2> transitions = {{
+	fsm.add_transitions({
 	    {States::Initial, States::A, 'a', nullptr, nullptr},
-	    {States::A, States::Final, 'b', nullptr, nullptr}, }};
-	fsm.add_transitions(transitions.begin(), transitions.end());
+	    {States::A, States::Final, 'b', nullptr, nullptr},
+	});
 
 	SECTION("Test enable debugging function.")
 	{
