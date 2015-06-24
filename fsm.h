@@ -126,8 +126,8 @@
  *
  * ~~~
  * // Define debug function
- * void dbg_fsm(int from_state, int to_state, char trigger) {
- *   std::cout << "changed from " << from_state << " to " << to_state << " with trigger " << trigger;
+ * void dbg_fsm(State from_state, State to_state, char trigger) {
+ *   std::cout << "state has changed\n";
  * }
  * // Enable debug
  * fsm.add_debug_fn(dbg_fsm);
@@ -141,32 +141,30 @@
  * The following example implements this simple state machine.
  *
  * ~~~
- *   ---------------                    ----------                              -------------
- *   | Fsm_Initial | -- 'a'/action1 --> | stateA | -- [guard2]'b' / action2 --> | Fsm_Final |
- *   ---------------                    ----------                              -------------
+ *   +----------+                    +--------+                              +---------+
+ *   | Initial  | -- 'a'/action1 --> | stateA | -- [guard2]'b' / action2 --> | Final   |
+ *   +----------+                    +--------+                              +---------+
  * ~~~
  *
  * ~~~
  *   void action1() { std::cout << "perform custom action 1\n"; }
- *   bool guard2() const { return true; }
  *   void action2() { std::cout << "perform custom action 2\n"; }
- *   const int stateA = 1;
- *   std::vector<FSM::Trans> transitions =
+ *   enum class States {Initial, A, Final};
+ *   using F = FSM::Fsm<States, States::Initial>;
+ *   std::vector<F::Trans> transitions =
  *   {
  *     // from state     , to state      , trigger, guard           , action
- *     { FSM::Fsm_Initial, stateA        , 'a'    , nullptr         , action1 },
- *     { stateA          , FSM::Fsm_Final, 'b'    , []{return true} , action2 },
+ *     { States::Initial , States::A     , 'a'    , nullptr         , action1 },
+ *     { States::A       , States::Final , 'b'    , []{return true} , action2 },
  *   };
  *
- *   FSM::Fsm fsm;
+ *   F fsm;
  *   fsm.add_transitions(transitions);
- *   fsm.init();
  *   assert(is_initial());
  *   fsm.execute('a');
- *   assert(stateA == fsm.state());
+ *   assert(States::A == fsm.state());
  *   fsm.execute('b');
- *   assert((int)FSM::Fsm_Final == fsm.state());
- *   assert(is_final());
+ *   assert(States::Final == fsm.state());
  *   fsm.reset();
  *   assert(is_initial());
  * ~~~
@@ -180,15 +178,8 @@
 
 // Forward declarations
 
-namespace FSM {
-
-/**
- * A list of predefined pseudo states.
- */
-enum Predefined_States {
-	Fsm_Initial = std::numeric_limits<int>::max()-1,
-	Fsm_Final = std::numeric_limits<int>::max(),
-};
+namespace FSM
+{
 
 enum Fsm_Errors {
 	// Success
@@ -197,65 +188,50 @@ enum Fsm_Errors {
 	// Warnings
 	// The current state has not such trigger associated.
 	Fsm_NoMatchingTrigger,
-
-	// Errors
-	// The state machine has not been initialized. Call init().
-	Fsm_NotInitialized,
-};
-
-// Defines the function prototype for a guard function.
-using guardFn = std::function<bool()>;
-// Defines the function prototype for an action function.
-using actionFn = std::function<void()>;
-// Defines the function prototype for a debug function.
-// Parameters are: from_state, to_state, trigger
-using debugFn = std::function<void(int,int,char)>;
-
-/**
- * Defines a transition between two states.
- */
-struct Trans {
-	int from_state;
-	int to_state;
-	char trigger;
-	guardFn guard;
-	actionFn action;
 };
 
 /**
  * An generic finite state machine (FSM) implementation.
  */
-class Fsm {
+template <class State, State Initial> class Fsm
+{
 
+public:
+	// Defines the function prototype for a guard function.
+	using guardFn = std::function<bool()>;
+	// Defines the function prototype for an action function.
+	using actionFn = std::function<void()>;
+	// Defines the function prototype for a debug function.
+	// Parameters are: from_state, to_state, trigger
+	using debugFn = std::function<void(State, State, char)>;
+
+	/**
+	 * Defines a transition between two states.
+	 */
+	struct Trans {
+		State from_state;
+		State to_state;
+		char trigger;
+		guardFn guard;
+		actionFn action;
+	};
+
+private:
 	// Definitions for the structure that holds the transitions.
 	// For good performance on state machines with many transitions, transitions
 	// are stored for each `from_state`:
 	//   map<from_state, vector<Trans> >
 	using transition_elem_t = std::vector<Trans>;
-	using transitions_t = std::map<int, transition_elem_t>;
+	using transitions_t = std::map<State, transition_elem_t>;
 	transitions_t m_transitions;
 	// Current state.
-	int m_cs;
-	bool m_initialized;
+	State m_cs;
 	debugFn m_debug_fn;
 
 public:
-
 	// Constructor.
-	Fsm() : m_transitions(), m_cs(0), m_initialized(false), m_debug_fn(nullptr) {}
-
-	/**
-	 * Initializes the FSM.
-	 *
-	 * This sets the current state to Fsm_Initial.
-	 * Once the fsm has been initialized, calling this function has no effect.
-	 */
-	void init()
+	Fsm() : m_transitions(), m_cs(Initial), m_debug_fn(nullptr)
 	{
-		if(!m_initialized) {
-			m_cs = Fsm_Initial;
-			m_initialized = true;
-		}
 	}
 
 	/**
@@ -266,8 +242,7 @@ public:
 	 */
 	void reset()
 	{
-		m_cs = Fsm_Initial;
-		m_initialized = false;
+		m_cs = Initial;
 	}
 
 	/**
@@ -276,8 +251,7 @@ public:
 	 * This function can be called multiple times at any time. Added
 	 * transitions cannot be removed from the machine.
 	 */
-	template<typename InputIt>
-	void add_transitions(InputIt start, InputIt end)
+	template <typename InputIt> void add_transitions(InputIt start, InputIt end)
 	{
 		InputIt it = start;
 		for(; it != end; ++it) {
@@ -292,8 +266,7 @@ public:
 	 * This method takes a collection and adds all its elements to the list of
 	 * transitions.
 	 */
-	template<typename Coll>
-	void add_transitions(Coll&& c)
+	template <typename Coll> void add_transitions(Coll&& c)
 	{
 		add_transitions(std::begin(c), std::end(c));
 	}
@@ -346,10 +319,6 @@ public:
 	 */
 	Fsm_Errors execute(char trigger)
 	{
-		if(not m_initialized) {
-			return Fsm_NotInitialized;
-		}
-
 		Fsm_Errors err_code = Fsm_NoMatchingTrigger;
 
 		const auto state_transitions = m_transitions.find(m_cs);
@@ -373,7 +342,7 @@ public:
 
 			// Check if action exists and execute it.
 			if(transition.action != 0) {
-				transition.action(); //execute action
+				transition.action(); // execute action
 			}
 			m_cs = transition.to_state;
 			if(m_debug_fn) {
@@ -388,15 +357,17 @@ public:
 	/**
 	 * Returns the current state;
 	 */
-	int state() const { return m_cs; }
+	State state() const
+	{
+		return m_cs;
+	}
 	/**
 	 * Returns whether the current state is the initial state.
 	 */
-	bool is_initial() const { return m_cs == Fsm_Initial; }
-	/**
-	 * Returns whether the current state is the final state.
-	 */
-	bool is_final() const { return m_cs == Fsm_Final; }
+	bool is_initial() const
+	{
+		return m_cs == Initial;
+	}
 };
 
 } // end namespace FSM
