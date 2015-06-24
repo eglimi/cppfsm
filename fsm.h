@@ -126,7 +126,7 @@
  *
  * ~~~
  * // Define debug function
- * void dbg_fsm(State from_state, State to_state, char trigger) {
+ * void dbg_fsm(State from_state, State to_state, Trigger trigger) {
  *   std::cout << "state has changed\n";
  * }
  * // Enable debug
@@ -193,7 +193,7 @@ enum Fsm_Errors {
 /**
  * An generic finite state machine (FSM) implementation.
  */
-template <class State, State Initial> class Fsm
+template <class State, State Initial, class Trigger> class Fsm
 {
 
 public:
@@ -203,7 +203,7 @@ public:
 	using actionFn = std::function<void()>;
 	// Defines the function prototype for a debug function.
 	// Parameters are: from_state, to_state, trigger
-	using debugFn = std::function<void(State, State, char)>;
+	using debugFn = std::function<void(State, State, Trigger)>;
 
 	/**
 	 * Defines a transition between two states.
@@ -211,7 +211,7 @@ public:
 	struct Trans {
 		State from_state;
 		State to_state;
-		char trigger;
+		Trigger trigger;
 		guardFn guard;
 		actionFn action;
 	};
@@ -235,10 +235,9 @@ public:
 	}
 
 	/**
-	 * Set the machine to uninitialized and the state to Fsm_Initial.
+	 * Set the machine to uninitialized and the state to Initial.
 	 *
-	 * This method can be called at any time. After a reset, init() must be
-	 * called in order to use the machine.
+	 * This method can be called at any time.
 	 */
 	void reset()
 	{
@@ -298,9 +297,9 @@ public:
 	 * Adds a function that is called on every state change. The type of the
 	 * function is `debugFn`. It has the following parameters.
 	 *
-	 * - from_state (int)
-	 * - to_state (int)
-	 * - trigger (char)
+	 * - from_state (user defined type)
+	 * - to_state (user defined type)
+	 * - trigger (user defined type)
 	 *
 	 * It can be used for debugging purposes. It can be enabled and disabled at
 	 * runtime. In order to enable it, pass a valid function pointer. In order
@@ -317,7 +316,7 @@ public:
 	 *
 	 * Returns the status of the execute operation. Fsm_Success is 0.
 	 */
-	Fsm_Errors execute(char trigger)
+	Fsm_Errors execute(Trigger trigger)
 	{
 		Fsm_Errors err_code = Fsm_NoMatchingTrigger;
 

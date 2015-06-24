@@ -38,7 +38,7 @@
 TEST_CASE("Test initial and final pseudo states")
 {
 	enum class States { Initial, Final };
-	using F = FSM::Fsm<States, States::Initial>;
+	using F = FSM::Fsm<States, States::Initial, char>;
 	F fsm;
 	fsm.add_transitions({
 	    {States::Initial, States::Final, 'a', nullptr, nullptr},
@@ -61,7 +61,7 @@ TEST_CASE("Test initial and final pseudo states")
 TEST_CASE("Test missing trigger")
 {
 	enum class States { Initial, Final };
-	using F = FSM::Fsm<States, States::Initial>;
+	using F = FSM::Fsm<States, States::Initial, char>;
 	F fsm;
 	fsm.add_transitions({
 	    {States::Initial, States::Final, 'b', nullptr, nullptr},
@@ -74,7 +74,7 @@ TEST_CASE("Test guards")
 	SECTION("Test false guard")
 	{
 		enum class States { Initial, Final };
-		using F = FSM::Fsm<States, States::Initial>;
+		using F = FSM::Fsm<States, States::Initial, char>;
 		F fsm;
 		fsm.add_transitions({
 		    {States::Initial, States::Final, 'a', [] { return false; }, nullptr},
@@ -87,7 +87,7 @@ TEST_CASE("Test guards")
 	SECTION("Test true guard")
 	{
 		enum class States { Initial, Final };
-		using F = FSM::Fsm<States, States::Initial>;
+		using F = FSM::Fsm<States, States::Initial, char>;
 		F fsm;
 		fsm.add_transitions({
 		    {States::Initial, States::Final, 'a', [] { return true; }, nullptr},
@@ -101,7 +101,7 @@ TEST_CASE("Test guards")
 	{
 		int count = 0;
 		enum class States { Initial, Final };
-		using F = FSM::Fsm<States, States::Initial>;
+		using F = FSM::Fsm<States, States::Initial, char>;
 		F fsm;
 		fsm.add_transitions({
 		    {States::Initial, States::Final, 'a', [] { return false; }, [&count] { count++; }},
@@ -119,7 +119,7 @@ TEST_CASE("Test Transitions")
 	{
 		int count = 0;
 		enum class States { Initial, A, Final };
-		using F = FSM::Fsm<States, States::Initial>;
+		using F = FSM::Fsm<States, States::Initial, char>;
 		F fsm;
 		fsm.add_transitions({
 		    {States::Initial, States::A, 'a', nullptr, [&count] { count++; }},
@@ -136,7 +136,7 @@ TEST_CASE("Test state machine reset")
 {
 	int action_count = 0;
 	enum class States { Initial, A, Final };
-	using F = FSM::Fsm<States, States::Initial>;
+	using F = FSM::Fsm<States, States::Initial, char>;
 	F fsm;
 	fsm.add_transitions({
 	    {States::Initial, States::A, 'a', nullptr, nullptr},
@@ -154,7 +154,7 @@ TEST_CASE("Test debug function")
 {
 	int action_count = 0;
 	enum class States { Initial, A, Final };
-	using F = FSM::Fsm<States, States::Initial>;
+	using F = FSM::Fsm<States, States::Initial, char>;
 	F fsm;
 	fsm.add_transitions({
 	    {States::Initial, States::A, 'a', nullptr, nullptr},
@@ -193,7 +193,7 @@ TEST_CASE("Test debug function")
 TEST_CASE("Test single argument add_transitions function")
 {
 	enum class States { Initial, A, Final };
-	using F = FSM::Fsm<States, States::Initial>;
+	using F = FSM::Fsm<States, States::Initial, char>;
 	F fsm;
 
 	SECTION("Test raw array")
@@ -237,7 +237,7 @@ TEST_CASE("Test int as type for states")
 	int INITIAL = 1;
 	int A = 2;
 	int FINAL = 3;
-	using F = FSM::Fsm<int, 1>;
+	using F = FSM::Fsm<int, 1, char>;
 	F fsm;
 	fsm.add_transitions({
 	    {INITIAL, A, 'a', nullptr, nullptr}, {A, A, 'b', nullptr, nullptr},
@@ -250,4 +250,19 @@ TEST_CASE("Test int as type for states")
 	REQUIRE(fsm.state() == A);
 	fsm.execute('c');
 	REQUIRE(fsm.state() == FINAL);
+}
+
+TEST_CASE("Test type safe triggers")
+{
+	enum class States { Initial, A, Final };
+	enum class Triggers { A, B };
+	using F = FSM::Fsm<States, States::Initial, Triggers>;
+	F fsm;
+	fsm.add_transitions({
+	    {States::Initial, States::A, Triggers::A, nullptr, nullptr},
+	    {States::A, States::Final, Triggers::B, nullptr, nullptr},
+	});
+	fsm.execute(Triggers::A);
+	fsm.execute(Triggers::B);
+	REQUIRE(fsm.state() == States::Final);
 }
