@@ -266,3 +266,24 @@ TEST_CASE("Test type safe triggers")
 	fsm.execute(Triggers::B);
 	REQUIRE(fsm.state() == States::Final);
 }
+
+TEST_CASE("Test passing an argument to an action")
+{
+	struct PushMe { int i; };
+	using PushMe_t = std::shared_ptr<PushMe>;
+	PushMe_t push_me = std::make_shared<PushMe>();
+	enum class States { Initial };
+	enum class Triggers { A };
+	int res = 0;
+	using F = FSM::Fsm<States, States::Initial, Triggers>;
+	F fsm;
+	fsm.add_transitions({
+	    {States::Initial, States::Initial, Triggers::A, nullptr, std::bind([&](PushMe_t p){res=p->i;}, push_me)},
+	});
+	push_me->i = 42;
+	fsm.execute(Triggers::A);
+	REQUIRE(res == 42);
+	push_me->i = 43;
+	fsm.execute(Triggers::A);
+	REQUIRE(res == 43);
+}
