@@ -20,6 +20,38 @@ Usage
 The implementation is contained in a single header file, `fsm.h`. Simply copy
 the file to a convenient place in your project and include it.
 
+Example
+-------
+
+As an example, consider the state machine below. It starts in state `A`. When
+it receives the `exec` trigger, it checks that the `count` variable is `1`,
+increments it, and changes to state `B`.
+
+~~~
+       +------+  Exec[count=1] / count++    +------+
+  o--->|  A   |---------------------------->|  B   |
+       +------+                             +------+
+~~~
+
+The implementation of this state machine is done in a declarative way.
+
+~~~
+int count = 1;
+enum class States { A, B };
+enum class Triggers { Exec };
+FSM::Fsm<States, States::A, Triggers> fsm;
+fsm.add_transitions({
+//  from state ,to state  ,triggers        ,guard                    ,action
+  { States::A  ,States::B ,Triggers::Exec  ,[&]{return count == 1;}  ,[&]{count++;} },
+});
+fsm.execute(Triggers::Exec);
+assert(count == 2);
+assert(fsm.state() == States::B);
+~~~
+
+See the tests for more examples.
+
+
 Stability
 ---------
 
