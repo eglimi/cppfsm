@@ -6,8 +6,13 @@ A simple, generic, header-only state machine implementation for C++.
 Documentation
 -------------
 
-Please see the documentation in `fsm.h` for more detailed documentation about
-the implemented features and semantics.
+Please see the documentation in [fsm.h](./fsm.h) for detailed documentation
+about the implemented features and semantics.
+
+Some more information about this component can also be found on our website. See [article 1] for the motivation, and [article 2] for the implementation.
+
+[article 1]: http://wisol.ch/w/articles/2015-01-04-state-machine-intro/
+[article 2]: http://wisol.ch/w/articles/2015-03-27-state-machine-impl/
 
 Usage
 -----
