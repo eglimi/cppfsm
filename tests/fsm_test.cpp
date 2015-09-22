@@ -136,18 +136,30 @@ TEST_CASE("Test state machine reset")
 {
 	int action_count = 0;
 	enum class States { Initial, A, Final };
-	using F = FSM::Fsm<States, States::Initial, char>;
+	enum class Triggers { A, B };
+	using F = FSM::Fsm<States, States::Initial, Triggers>;
 	F fsm;
 	fsm.add_transitions({
-	    {States::Initial, States::A, 'a', nullptr, nullptr},
-	    {States::A, States::Final, 'b', nullptr, nullptr},
+	    {States::Initial, States::A, Triggers::A, nullptr, nullptr},
+	    {States::A, States::Final, Triggers::B, nullptr, nullptr},
 	});
-	REQUIRE(fsm.execute('a') == FSM::Fsm_Success);
-	REQUIRE(fsm.state() == States::A);
-	fsm.reset();
-	REQUIRE(fsm.state() == States::Initial);
-	REQUIRE(fsm.execute('a') == FSM::Fsm_Success);
-	REQUIRE(fsm.execute('b') == FSM::Fsm_Success);
+
+	SECTION("Test default reset action")
+	{
+		REQUIRE(fsm.execute(Triggers::A) == FSM::Fsm_Success);
+		REQUIRE(fsm.state() == States::A);
+		fsm.reset();
+		REQUIRE(fsm.state() == States::Initial);
+		REQUIRE(fsm.execute(Triggers::A) == FSM::Fsm_Success);
+		REQUIRE(fsm.execute(Triggers::B) == FSM::Fsm_Success);
+	}
+	SECTION("Test reset to specific state")
+	{
+		REQUIRE(fsm.execute(Triggers::A) == FSM::Fsm_Success);
+		REQUIRE(fsm.state() == States::A);
+		fsm.reset(States::Final);
+		REQUIRE(fsm.state() == States::Final);
+	}
 }
 
 TEST_CASE("Test debug function")

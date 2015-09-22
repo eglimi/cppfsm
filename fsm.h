@@ -234,13 +234,13 @@ public:
 	}
 
 	/**
-	 * Set the machine to uninitialized and the state to Initial.
+	 * Sets the current state to the given state. Defaults to the Initial state.
 	 *
 	 * This method can be called at any time.
 	 */
-	void reset()
+	void reset(State s = Initial)
 	{
-		m_cs = Initial;
+		m_cs = s;
 	}
 
 	/**
