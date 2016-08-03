@@ -170,10 +170,10 @@ The following example implements this simple state machine.
 */
 
 // Includes
+#include <functional>
 #include <limits>
 #include <map>
 #include <vector>
-#include <functional>
 
 // Forward declarations
 
@@ -192,7 +192,8 @@ enum Fsm_Errors {
 /**
  * An generic finite state machine (FSM) implementation.
  */
-template <class State, State Initial, class Trigger> class Fsm
+template <class State, State Initial, class Trigger>
+class Fsm
 {
 
 public:
@@ -207,7 +208,8 @@ public:
 	/**
 	 * Defines a transition between two states.
 	 */
-	struct Trans {
+	struct Trans
+	{
 		State from_state;
 		State to_state;
 		Trigger trigger;
@@ -249,7 +251,8 @@ public:
 	 * This function can be called multiple times at any time. Added
 	 * transitions cannot be removed from the machine.
 	 */
-	template <typename InputIt> void add_transitions(InputIt start, InputIt end)
+	template <typename InputIt>
+	void add_transitions(InputIt start, InputIt end)
 	{
 		InputIt it = start;
 		for(; it != end; ++it) {
@@ -264,7 +267,8 @@ public:
 	 * This method takes a collection and adds all its elements to the list of
 	 * transitions.
 	 */
-	template <typename Coll> void add_transitions(Coll&& c)
+	template <typename Coll>
+	void add_transitions(Coll&& c)
 	{
 		add_transitions(std::begin(c), std::end(c));
 	}
@@ -358,6 +362,7 @@ public:
 	{
 		return m_cs;
 	}
+
 	/**
 	 * Returns whether the current state is the initial state.
 	 */
