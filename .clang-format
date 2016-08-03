@@ -1,0 +1,31 @@
+BasedOnStyle: Mozilla
+Language: Cpp
+Standard: Cpp11
+IndentWidth: 4
+TabWidth: 4
+UseTab: ForIndentation
+ColumnLimit: 100
+AccessModifierOffset: -4
+AlwaysBreakAfterDefinitionReturnType: None
+AlwaysBreakAfterReturnType: None
+PenaltyReturnTypeOnItsOwnLine: 200
+AllowShortFunctionsOnASingleLine: Empty
+AllowShortCaseLabelsOnASingleLine: true
+AllowShortBlocksOnASingleLine: true
+AllowShortIfStatementsOnASingleLine: true
+ConstructorInitializerAllOnOneLineOrOnePerLine: true
+SpaceBeforeParens: Never
+BreakBeforeBraces: Custom
+BraceWrapping:
+  AfterClass:            true
+  AfterControlStatement: false
+  AfterEnum:             false
+  AfterFunction:         true
+  AfterNamespace:        true
+  AfterObjCDeclaration:  false
+  AfterStruct:           true
+  AfterUnion:            true
+  BeforeCatch:           false
+  BeforeElse:            false
+  IndentBraces:          false
+Cpp11BracedListStyle: true
