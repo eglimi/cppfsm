@@ -288,7 +288,6 @@ public:
 	 */
 	void add_transitions(std::initializer_list<Trans>&& i)
 	{
-
 		add_transitions(std::begin(i), std::end(i));
 	}
 
