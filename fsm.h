@@ -325,7 +325,7 @@ public:
 
 		// iterate the transitions
 		const transition_elem_t& active_transitions = state_transitions->second;
-		for(auto& transition : active_transitions) {
+		for(const auto& transition : active_transitions) {
 
 			// Check if trigger matches.
 			if(trigger != transition.trigger) continue;
