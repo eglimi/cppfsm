@@ -336,7 +336,7 @@ public:
 			err_code = Fsm_Success;
 
 			// Check if guard exists and returns true.
-			if(transition.guard && (not transition.guard())) continue;
+			if(transition.guard && !transition.guard()) continue;
 
 			// Now we have to take the action and set the new state.
 			// Then we are done.
