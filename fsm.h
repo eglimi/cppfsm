@@ -149,23 +149,23 @@ The following example implements this simple state machine.
   void action1() { std::cout << "perform custom action 1\n"; }
   void action2() { std::cout << "perform custom action 2\n"; }
   enum class States {Initial, A, Final};
-  using F = FSM::Fsm<States, States::Initial>;
+  using F = FSM::Fsm<States, States::Initial, char>;
   std::vector<F::Trans> transitions =
   {
     // from state     , to state      , trigger, guard           , action
     { States::Initial , States::A     , 'a'    , nullptr         , action1 },
-    { States::A       , States::Final , 'b'    , []{return true} , action2 },
+    { States::A       , States::Final , 'b'    , []{return true;} , action2 },
   };
 
   F fsm;
   fsm.add_transitions(transitions);
-  assert(is_initial());
+  assert(fsm.is_initial());
   fsm.execute('a');
   assert(States::A == fsm.state());
   fsm.execute('b');
   assert(States::Final == fsm.state());
   fsm.reset();
-  assert(is_initial());
+  assert(fsm.is_initial());
 ~~~
 */
 
