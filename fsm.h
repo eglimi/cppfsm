@@ -237,6 +237,26 @@ public:
 	{
 	}
 
+	template <typename InputIt>
+	Fsm(InputIt start, InputIt end) :
+		m_transitions(), m_cs(Initial), m_debug_fn(nullptr)
+	{
+		add_transitions(start, end);
+	}
+
+	template <typename Coll>
+	Fsm(Coll &&c) :
+		m_transitions(), m_cs(Initial), m_debug_fn(nullptr)
+	{
+		add_transitions(c);
+	}
+
+	Fsm(std::initializer_list<Trans>&& i) :
+		m_transitions(), m_cs(Initial), m_debug_fn(nullptr)
+	{
+		add_transitions(i);
+	}
+
 	/**
 	 * Sets the current state to the given state. Defaults to the Initial state.
 	 *

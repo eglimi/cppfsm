@@ -244,6 +244,47 @@ TEST_CASE("Test single argument add_transitions function")
 	}
 }
 
+TEST_CASE("Test single argument constructors with transitions")
+{
+	enum class States { Initial, A, Final };
+	using F = FSM::Fsm<States, States::Initial, char>;
+
+	SECTION("Test raw array")
+	{
+		F::Trans v[] = {
+			{States::Initial, States::A, 'a', nullptr, nullptr},
+			{States::A, States::Final, 'b', nullptr, nullptr},
+		};
+		F fsm(&v[0], &v[2]);
+		fsm.execute('a');
+		fsm.execute('b');
+		REQUIRE(fsm.state() == States::Final);
+	}
+
+	SECTION("Test vector")
+	{
+		std::vector<F::Trans> v = {
+			{States::Initial, States::A, 'a', nullptr, nullptr},
+			{States::A, States::Final, 'b', nullptr, nullptr},
+		};
+		F fsm(v);
+		fsm.execute('a');
+		fsm.execute('b');
+		REQUIRE(fsm.state() == States::Final);
+	}
+
+	SECTION("Test initializer list")
+	{
+		F fsm{
+			{States::Initial, States::A, 'a', nullptr, nullptr},
+			{States::A, States::Final, 'b', nullptr, nullptr},
+		};
+		fsm.execute('a');
+		fsm.execute('b');
+		REQUIRE(fsm.state() == States::Final);
+	}
+}
+
 TEST_CASE("Test int as type for states")
 {
 	int INITIAL = 1;
