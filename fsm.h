@@ -335,11 +335,11 @@ public:
 
 			// Check if trigger matches.
 			if(trigger != transition.trigger) continue;
-			err_code = Fsm_Success;
 
 			// Check if guard exists and returns true.
 			if(transition.guard && !transition.guard()) continue;
-
+			err_code = Fsm_Success;
+			
 			// Now we have to take the action and set the new state.
 			// Then we are done.
 
