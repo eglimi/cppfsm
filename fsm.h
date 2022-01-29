@@ -182,13 +182,16 @@ The following example implements this simple state machine.
 namespace FSM
 {
 
-enum Fsm_Errors {
+enum Fsm_Status {
 	// Success
 	Fsm_Success = 0,
 
 	// Warnings
 	// The current state has not such trigger associated.
 	Fsm_NoMatchingTrigger,
+
+	// The current state was blocked by guard
+	Fsm_BlockedByGuard,
 };
 
 /**
@@ -320,9 +323,9 @@ public:
 	 *
 	 * Returns the status of the execute operation. Fsm_Success is 0.
 	 */
-	Fsm_Errors execute(Trigger trigger)
+	Fsm_Status execute(Trigger trigger)
 	{
-		Fsm_Errors err_code = Fsm_NoMatchingTrigger;
+		Fsm_Status err_code = Fsm_NoMatchingTrigger;
 
 		const auto state_transitions = m_transitions.find(m_cs);
 		if(state_transitions == m_transitions.end()) {
@@ -335,11 +338,12 @@ public:
 
 			// Check if trigger matches.
 			if(trigger != transition.trigger) continue;
-			err_code = Fsm_Success;
+			err_code = Fsm_BlockedByGuard;
 
 			// Check if guard exists and returns true.
 			if(transition.guard && !transition.guard()) continue;
-
+			err_code = Fsm_Success;
+			
 			// Now we have to take the action and set the new state.
 			// Then we are done.
 

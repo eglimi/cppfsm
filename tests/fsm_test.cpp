@@ -79,7 +79,7 @@ TEST_CASE("Test guards")
 		fsm.add_transitions({
 		    {States::Initial, States::Final, 'a', [] { return false; }, nullptr},
 		});
-		REQUIRE(fsm.execute('a') == FSM::Fsm_Success);
+		REQUIRE(fsm.execute('a') == FSM::Fsm_BlockedByGuard);
 		// ensure that the transition to final is not taken (because of the guard).
 		REQUIRE(fsm.state() == States::Initial);
 	}
@@ -129,6 +129,22 @@ TEST_CASE("Test Transitions")
 		REQUIRE(fsm.execute('a') == FSM::Fsm_Success);
 		// Ensure that only one action has executed.
 		REQUIRE(count == 1);
+	}
+	SECTION("Test execute statuses")
+	{
+		enum class States { Initial, A, B, Final };
+		FSM::Fsm<States, States::Initial, std::string> fsm;
+		fsm.add_transitions({
+			{ States::Initial, States::A, "from_init_to_A", nullptr, nullptr }, // Fsm_Success
+			{ States::A,       States::B, "from_A_to_B",    []{ return false; }, nullptr }, // Fsm_BlockedByGuard
+			{ States::A,       States::B, "from_A_to_B_force", nullptr, nullptr },
+			{ States::B,       States::Final, "from_B_to_final", nullptr, nullptr },
+		});
+
+		REQUIRE(FSM::Fsm_Success           == fsm.execute("from_init_to_A")                );
+		REQUIRE(FSM::Fsm_BlockedByGuard    == fsm.execute("from_A_to_B")                   );
+		REQUIRE(FSM::Fsm_NoMatchingTrigger == fsm.execute("sometime_we_need_some_freedom") );
+		REQUIRE(FSM::Fsm_Success           == fsm.execute("from_A_to_B_force")             );
 	}
 }
 
