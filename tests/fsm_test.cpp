@@ -150,7 +150,6 @@ TEST_CASE("Test Transitions")
 
 TEST_CASE("Test state machine reset")
 {
-	int action_count = 0;
 	enum class States { Initial, A, Final };
 	enum class Triggers { A, B };
 	using F = FSM::Fsm<States, States::Initial, Triggers>;
@@ -180,7 +179,6 @@ TEST_CASE("Test state machine reset")
 
 TEST_CASE("Test debug function")
 {
-	int action_count = 0;
 	enum class States { Initial, A, Final };
 	using F = FSM::Fsm<States, States::Initial, char>;
 	F fsm;
