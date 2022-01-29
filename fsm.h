@@ -151,7 +151,7 @@ The following example implements this simple state machine.
   enum class States {Initial, A, Final};
   enum class Triggers { A, B };
   using F = FSM::Fsm<States, States::Initial, Triggers>;
-  
+
   std::vector<F::Trans> transitions =
   {
     // from state     , to state      , trigger, guard           , action
@@ -197,7 +197,7 @@ enum Fsm_Status {
 /**
  * An generic finite state machine (FSM) implementation.
  */
-template <class State, State Initial, class Trigger>
+template<class State, State Initial, class Trigger>
 class Fsm
 {
 
@@ -236,9 +236,7 @@ private:
 
 public:
 	// Constructor.
-	Fsm() : m_transitions(), m_cs(Initial), m_debug_fn(nullptr)
-	{
-	}
+	Fsm() : m_transitions(), m_cs(Initial), m_debug_fn(nullptr) {}
 
 	/**
 	 * Sets the current state to the given state. Defaults to the Initial state.
@@ -256,7 +254,7 @@ public:
 	 * This function can be called multiple times at any time. Added
 	 * transitions cannot be removed from the machine.
 	 */
-	template <typename InputIt>
+	template<typename InputIt>
 	void add_transitions(InputIt start, InputIt end)
 	{
 		InputIt it = start;
@@ -272,7 +270,7 @@ public:
 	 * This method takes a collection and adds all its elements to the list of
 	 * transitions.
 	 */
-	template <typename Coll>
+	template<typename Coll>
 	void add_transitions(Coll&& c)
 	{
 		add_transitions(std::begin(c), std::end(c));
@@ -343,7 +341,7 @@ public:
 			// Check if guard exists and returns true.
 			if(transition.guard && !transition.guard()) continue;
 			err_code = Fsm_Success;
-			
+
 			// Now we have to take the action and set the new state.
 			// Then we are done.
 
@@ -352,9 +350,7 @@ public:
 				transition.action(); // execute action
 			}
 			m_cs = transition.to_state;
-			if(m_debug_fn) {
-				m_debug_fn(transition.from_state, transition.to_state, trigger);
-			}
+			if(m_debug_fn) { m_debug_fn(transition.from_state, transition.to_state, trigger); }
 			break;
 		}
 

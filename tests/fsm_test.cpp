@@ -30,10 +30,10 @@
  */
 
 #define CATCH_CONFIG_MAIN
+#include "../fsm.h"
 #include "catch.hpp"
 #include <array>
 #include <vector>
-#include "../fsm.h"
 
 TEST_CASE("Test initial and final pseudo states")
 {
@@ -41,7 +41,7 @@ TEST_CASE("Test initial and final pseudo states")
 	using F = FSM::Fsm<States, States::Initial, char>;
 	F fsm;
 	fsm.add_transitions({
-	    {States::Initial, States::Final, 'a', nullptr, nullptr},
+	  {States::Initial, States::Final, 'a', nullptr, nullptr},
 	});
 
 	SECTION("Test initial pseudo state")
@@ -64,7 +64,7 @@ TEST_CASE("Test missing trigger")
 	using F = FSM::Fsm<States, States::Initial, char>;
 	F fsm;
 	fsm.add_transitions({
-	    {States::Initial, States::Final, 'b', nullptr, nullptr},
+	  {States::Initial, States::Final, 'b', nullptr, nullptr},
 	});
 	REQUIRE(fsm.execute('a') == FSM::Fsm_NoMatchingTrigger);
 }
@@ -77,7 +77,7 @@ TEST_CASE("Test guards")
 		using F = FSM::Fsm<States, States::Initial, char>;
 		F fsm;
 		fsm.add_transitions({
-		    {States::Initial, States::Final, 'a', [] { return false; }, nullptr},
+		  {States::Initial, States::Final, 'a', [] { return false; }, nullptr},
 		});
 		REQUIRE(fsm.execute('a') == FSM::Fsm_BlockedByGuard);
 		// ensure that the transition to final is not taken (because of the guard).
@@ -90,7 +90,7 @@ TEST_CASE("Test guards")
 		using F = FSM::Fsm<States, States::Initial, char>;
 		F fsm;
 		fsm.add_transitions({
-		    {States::Initial, States::Final, 'a', [] { return true; }, nullptr},
+		  {States::Initial, States::Final, 'a', [] { return true; }, nullptr},
 		});
 		REQUIRE(fsm.execute('a') == FSM::Fsm_Success);
 		// ensure that the transition to final is taken (because of the guard).
@@ -104,8 +104,8 @@ TEST_CASE("Test guards")
 		using F = FSM::Fsm<States, States::Initial, char>;
 		F fsm;
 		fsm.add_transitions({
-		    {States::Initial, States::Final, 'a', [] { return false; }, [&count] { count++; }},
-		    {States::Initial, States::Final, 'a', [] { return true; }, [&count] { count = 10; }},
+		  {States::Initial, States::Final, 'a', [] { return false; }, [&count] { count++; }},
+		  {States::Initial, States::Final, 'a', [] { return true; }, [&count] { count = 10; }},
 		});
 		REQUIRE(fsm.execute('a') == FSM::Fsm_Success);
 		// ensure that action2 was taken (because of the guard).
@@ -122,9 +122,9 @@ TEST_CASE("Test Transitions")
 		using F = FSM::Fsm<States, States::Initial, char>;
 		F fsm;
 		fsm.add_transitions({
-		    {States::Initial, States::A, 'a', nullptr, [&count] { count++; }},
-		    {States::A, States::A, 'a', nullptr, [&count] { count++; }},
-		    {States::A, States::Final, 'a', nullptr, [&count] { count++; }},
+		  {States::Initial, States::A, 'a', nullptr, [&count] { count++; }},
+		  {States::A, States::A, 'a', nullptr, [&count] { count++; }},
+		  {States::A, States::Final, 'a', nullptr, [&count] { count++; }},
 		});
 		REQUIRE(fsm.execute('a') == FSM::Fsm_Success);
 		// Ensure that only one action has executed.
@@ -134,17 +134,19 @@ TEST_CASE("Test Transitions")
 	{
 		enum class States { Initial, A, B, Final };
 		FSM::Fsm<States, States::Initial, std::string> fsm;
+		// clang-format off
 		fsm.add_transitions({
-			{ States::Initial, States::A, "from_init_to_A", nullptr, nullptr }, // Fsm_Success
-			{ States::A,       States::B, "from_A_to_B",    []{ return false; }, nullptr }, // Fsm_BlockedByGuard
-			{ States::A,       States::B, "from_A_to_B_force", nullptr, nullptr },
-			{ States::B,       States::Final, "from_B_to_final", nullptr, nullptr },
+		  {States::Initial, States::A, "from_init_to_A", nullptr, nullptr}, // Fsm_Success
+		  {States::A, States::B, "from_A_to_B", [] { return false; }, nullptr}, // Fsm_BlockedByGuard
+		  {States::A, States::B, "from_A_to_B_force", nullptr, nullptr},
+		  {States::B, States::Final, "from_B_to_final", nullptr, nullptr},
 		});
+		// clang-format on
 
-		REQUIRE(FSM::Fsm_Success           == fsm.execute("from_init_to_A")                );
-		REQUIRE(FSM::Fsm_BlockedByGuard    == fsm.execute("from_A_to_B")                   );
-		REQUIRE(FSM::Fsm_NoMatchingTrigger == fsm.execute("sometime_we_need_some_freedom") );
-		REQUIRE(FSM::Fsm_Success           == fsm.execute("from_A_to_B_force")             );
+		REQUIRE(FSM::Fsm_Success == fsm.execute("from_init_to_A"));
+		REQUIRE(FSM::Fsm_BlockedByGuard == fsm.execute("from_A_to_B"));
+		REQUIRE(FSM::Fsm_NoMatchingTrigger == fsm.execute("sometime_we_need_some_freedom"));
+		REQUIRE(FSM::Fsm_Success == fsm.execute("from_A_to_B_force"));
 	}
 }
 
@@ -155,8 +157,8 @@ TEST_CASE("Test state machine reset")
 	using F = FSM::Fsm<States, States::Initial, Triggers>;
 	F fsm;
 	fsm.add_transitions({
-	    {States::Initial, States::A, Triggers::A, nullptr, nullptr},
-	    {States::A, States::Final, Triggers::B, nullptr, nullptr},
+	  {States::Initial, States::A, Triggers::A, nullptr, nullptr},
+	  {States::A, States::Final, Triggers::B, nullptr, nullptr},
 	});
 
 	SECTION("Test default reset action")
@@ -183,8 +185,8 @@ TEST_CASE("Test debug function")
 	using F = FSM::Fsm<States, States::Initial, char>;
 	F fsm;
 	fsm.add_transitions({
-	    {States::Initial, States::A, 'a', nullptr, nullptr},
-	    {States::A, States::Final, 'b', nullptr, nullptr},
+	  {States::Initial, States::A, 'a', nullptr, nullptr},
+	  {States::A, States::Final, 'b', nullptr, nullptr},
 	});
 
 	SECTION("Test enable debugging function.")
@@ -225,8 +227,8 @@ TEST_CASE("Test single argument add_transitions function")
 	SECTION("Test raw array")
 	{
 		F::Trans v[] = {
-		    {States::Initial, States::A, 'a', nullptr, nullptr},
-		    {States::A, States::Final, 'b', nullptr, nullptr},
+		  {States::Initial, States::A, 'a', nullptr, nullptr},
+		  {States::A, States::Final, 'b', nullptr, nullptr},
 		};
 		fsm.add_transitions(&v[0], &v[2]);
 		fsm.execute('a');
@@ -237,8 +239,8 @@ TEST_CASE("Test single argument add_transitions function")
 	SECTION("Test vector")
 	{
 		std::vector<F::Trans> v = {
-		    {States::Initial, States::A, 'a', nullptr, nullptr},
-		    {States::A, States::Final, 'b', nullptr, nullptr},
+		  {States::Initial, States::A, 'a', nullptr, nullptr},
+		  {States::A, States::Final, 'b', nullptr, nullptr},
 		};
 		fsm.add_transitions(v);
 		fsm.execute('a');
@@ -249,8 +251,8 @@ TEST_CASE("Test single argument add_transitions function")
 	SECTION("Test initializer list")
 	{
 		fsm.add_transitions({
-		    {States::Initial, States::A, 'a', nullptr, nullptr},
-		    {States::A, States::Final, 'b', nullptr, nullptr},
+		  {States::Initial, States::A, 'a', nullptr, nullptr},
+		  {States::A, States::Final, 'b', nullptr, nullptr},
 		});
 		fsm.execute('a');
 		fsm.execute('b');
@@ -266,8 +268,9 @@ TEST_CASE("Test int as type for states")
 	using F = FSM::Fsm<int, 1, char>;
 	F fsm;
 	fsm.add_transitions({
-	    {INITIAL, A, 'a', nullptr, nullptr}, {A, A, 'b', nullptr, nullptr},
-	    {A, FINAL, 'c', nullptr, nullptr},
+	  {INITIAL, A, 'a', nullptr, nullptr},
+	  {A, A, 'b', nullptr, nullptr},
+	  {A, FINAL, 'c', nullptr, nullptr},
 	});
 	REQUIRE(fsm.state() == INITIAL);
 	fsm.execute('a');
@@ -285,8 +288,8 @@ TEST_CASE("Test type safe triggers")
 	using F = FSM::Fsm<States, States::Initial, Triggers>;
 	F fsm;
 	fsm.add_transitions({
-	    {States::Initial, States::A, Triggers::A, nullptr, nullptr},
-	    {States::A, States::Final, Triggers::B, nullptr, nullptr},
+	  {States::Initial, States::A, Triggers::A, nullptr, nullptr},
+	  {States::A, States::Final, Triggers::B, nullptr, nullptr},
 	});
 	fsm.execute(Triggers::A);
 	fsm.execute(Triggers::B);
@@ -295,7 +298,10 @@ TEST_CASE("Test type safe triggers")
 
 TEST_CASE("Test passing an argument to an action")
 {
-	struct PushMe { int i; };
+	struct PushMe
+	{
+		int i;
+	};
 	using PushMe_t = std::shared_ptr<PushMe>;
 	PushMe_t push_me = std::make_shared<PushMe>();
 	enum class States { Initial };
@@ -303,9 +309,13 @@ TEST_CASE("Test passing an argument to an action")
 	int res = 0;
 	using F = FSM::Fsm<States, States::Initial, Triggers>;
 	F fsm;
+	// clang-format off
 	fsm.add_transitions({
-	    {States::Initial, States::Initial, Triggers::A, nullptr, std::bind([&](PushMe_t p){res=p->i;}, push_me)},
+	  {States::Initial, States::Initial, Triggers::A,
+	    nullptr,
+	    std::bind([&](PushMe_t p) { res = p->i; }, push_me)},
 	});
+	// clang-format on
 	push_me->i = 42;
 	fsm.execute(Triggers::A);
 	REQUIRE(res == 42);
